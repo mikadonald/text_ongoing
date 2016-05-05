@@ -92,7 +92,7 @@ public class IssueDAO {
             int id = issue.getId();
             String app = format(issue.getApp());
             String title = format(issue.getTitle());
-            String description = format(issue.getDescription());
+            byte[]  description = issue.getDescription();     
             String programmer = format(issue.getProgrammer());
             String dateOpened = format(issue.getDateOpened());
             String rk = (issue.getRk().equals(""))?null:issue.getRk(); // no single quotes
@@ -148,7 +148,7 @@ public class IssueDAO {
             int id = issue.getId();
             String app = format(issue.getApp());
             Object title = format(issue.getTitle());
-            Object description = format(issue.getDescription());
+            byte[] description = issue.getDescription();
             String programmer = format(issue.getProgrammer());
             String dateOpened = format(issue.getDateOpened());
             String rk = (issue.getRk().equals(""))?null:issue.getRk(); // no single quotes
@@ -168,8 +168,7 @@ public class IssueDAO {
                     description = null;
                 } // if the cell is not empty it must have single quotes ---Youzhi
                 else{
-                    description = processCellValue(description);
-                    description = "'" + description + "'";
+                    description = description;
                     
                 }
             }

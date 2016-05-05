@@ -8,6 +8,11 @@ import com.elle.ProjectManager.logic.Tab;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectOutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -18,6 +23,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -27,7 +34,9 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.TableModel;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.rtf.RTFEditorKit;
 
 /**
  *
@@ -48,7 +57,7 @@ public class IssueWindow extends JFrame {
     /**
      * Creates new form IssueWindow
      */
-    public IssueWindow(int row, JTable table) {
+    public IssueWindow(int row, JTable table) throws IOException, BadLocationException {
         projectManager = ProjectManagerWindow.getInstance();
          tabs = projectManager.getTabs();
         this.table = table;
@@ -161,8 +170,6 @@ public class IssueWindow extends JFrame {
         dateOpenedText = new javax.swing.JTextField();
         programmer = new javax.swing.JLabel();
         dateOpened = new javax.swing.JLabel();
-        jScrollPane7 = new javax.swing.JScrollPane();
-        descriptionText = new javax.swing.JTextArea();
         jPanel1 = new javax.swing.JPanel();
         buttonCancel = new javax.swing.JButton();
         buttonSubmit = new javax.swing.JButton();
@@ -184,9 +191,11 @@ public class IssueWindow extends JFrame {
         submitterText = new javax.swing.JTextField();
         submitter = new javax.swing.JLabel();
         lockCheckBox = new javax.swing.JCheckBox();
-        comboBoxIssueType = new javax.swing.JComboBox<String>();
+        comboBoxIssueType = new javax.swing.JComboBox<>();
         programmerComboBox = new javax.swing.JComboBox();
         rkComboBox = new javax.swing.JComboBox();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        descriptionText = new javax.swing.JTextPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -219,18 +228,6 @@ public class IssueWindow extends JFrame {
 
         dateOpened.setText(" dateOpened");
         dateOpened.setPreferredSize(new java.awt.Dimension(79, 12));
-
-        descriptionText.setColumns(20);
-        descriptionText.setLineWrap(true);
-        descriptionText.setRows(5);
-        descriptionText.setWrapStyleWord(true);
-        descriptionText.setName("description"); // NOI18N
-        descriptionText.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                descriptionTextKeyReleased(evt);
-            }
-        });
-        jScrollPane7.setViewportView(descriptionText);
 
         buttonCancel.setText("Cancel");
         buttonCancel.addActionListener(new java.awt.event.ActionListener() {
@@ -311,8 +308,7 @@ public class IssueWindow extends JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(buttonSubmit, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(buttonCancel)
-                        .addGap(0, 0, 0))))
+                        .addComponent(buttonCancel))))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -387,7 +383,7 @@ public class IssueWindow extends JFrame {
             }
         });
 
-        comboBoxIssueType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "FEATURE", "BUG", "REFERENCE" }));
+        comboBoxIssueType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "FEATURE", "BUG", "REFERENCE" }));
         comboBoxIssueType.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 comboBoxIssueTypeActionPerformed(evt);
@@ -411,6 +407,11 @@ public class IssueWindow extends JFrame {
             }
         });
 
+        descriptionText.setContentType("text/rtf"); // NOI18N
+        RTFEditorKit rtf = new RTFEditorKit();
+        descriptionText.setEditorKit(rtf);
+        jScrollPane1.setViewportView(descriptionText);
+
         javax.swing.GroupLayout formPaneLayout = new javax.swing.GroupLayout(formPane);
         formPane.setLayout(formPaneLayout);
         formPaneLayout.setHorizontalGroup(
@@ -418,6 +419,9 @@ public class IssueWindow extends JFrame {
             .addGroup(formPaneLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(formPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(formPaneLayout.createSequentialGroup()
+                        .addComponent(jScrollPane1)
+                        .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, formPaneLayout.createSequentialGroup()
                         .addGroup(formPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(id)
@@ -453,13 +457,9 @@ public class IssueWindow extends JFrame {
                         .addGap(177, 177, 177)
                         .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGap(6, 6, 6))
-                    .addGroup(formPaneLayout.createSequentialGroup()
-                        .addComponent(title, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, formPaneLayout.createSequentialGroup()
                         .addGroup(formPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(titleText, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane7, javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(formPaneLayout.createSequentialGroup()
                                 .addComponent(description)
@@ -467,7 +467,10 @@ public class IssueWindow extends JFrame {
                                 .addComponent(BtnPrevious)
                                 .addGap(0, 0, 0)
                                 .addComponent(BtnNext)))
-                        .addContainerGap())))
+                        .addContainerGap())
+                    .addGroup(formPaneLayout.createSequentialGroup()
+                        .addComponent(title, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         formPaneLayout.setVerticalGroup(
             formPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -504,9 +507,9 @@ public class IssueWindow extends JFrame {
                     .addComponent(BtnNext)
                     .addComponent(BtnPrevious)
                     .addComponent(description, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 0, 0)
-                .addComponent(jScrollPane7, javax.swing.GroupLayout.PREFERRED_SIZE, 505, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 493, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -636,30 +639,6 @@ public class IssueWindow extends JFrame {
         }
     }//GEN-LAST:event_dateOpenedTextKeyReleased
 
-    private void descriptionTextKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_descriptionTextKeyReleased
-        JTextArea dateArea = (JTextArea) evt.getComponent();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = new Date();
-        String today = dateFormat.format(date);
-        String value = dateArea.getText();
-        if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_D) {
-            dateArea.requestFocusInWindow();
-            dateArea.selectAll();
-            value = value + " " + today;
-            dateArea.setText(value);
-        } else if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_N) {
-
-            int pos = dateArea.getCaretPosition();
-            String userName = projectManager.getUserName();
-            String message = "\n" + "-- by " + userName + " on " + today + "-- \n";
-            //String value1 = value.substring(0, pos) + message + value.substring(pos, value.length());
-            dateArea.insert(message, pos);
-
-            dateArea.setCaretPosition(pos + userName.length() + 25);
-
-        }
-    }//GEN-LAST:event_descriptionTextKeyReleased
-
     private void buttonCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCancelActionPerformed
         //        System.out.println(selectedTable.getValueAt(0, 0));
 
@@ -672,7 +651,13 @@ public class IssueWindow extends JFrame {
      * @param evt 
      */
     private void buttonSubmitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSubmitActionPerformed
-        setIssueValuesFromComponents();
+        try {
+            setIssueValuesFromComponents();
+        } catch (IOException ex) {
+            Logger.getLogger(IssueWindow.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (BadLocationException ex) {
+            Logger.getLogger(IssueWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
         if(dao.insert(issue)){
             projectManager.inserTableRow(table,issue);
@@ -686,7 +671,13 @@ public class IssueWindow extends JFrame {
      * @param evt 
      */
     private void buttonConfirmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonConfirmActionPerformed
-        setIssueValuesFromComponents();
+        try {
+            setIssueValuesFromComponents();
+        } catch (IOException ex) {
+            Logger.getLogger(IssueWindow.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (BadLocationException ex) {
+            Logger.getLogger(IssueWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         if(dao.update(issue)){
             projectManager.updateTableRow(table,issue);
@@ -708,23 +699,60 @@ public class IssueWindow extends JFrame {
         Date date = new Date();
         String today = dateFormat.format(date);
         String userName = projectManager.getUserName();
-        String value = descriptionText.getText();
+        
+        
+        RTFEditorKit rtf = new RTFEditorKit();
+        descriptionText.setEditorKit(rtf);
+        
+        ByteArrayOutputStream str = new ByteArrayOutputStream();                   
+        try {
+            descriptionText.getEditorKit().write(str, descriptionText.getDocument(), 0, descriptionText.getDocument().getLength());
+        } catch (IOException | BadLocationException ex) {
+            Logger.getLogger(IssueWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        byte[] bkeyvalue = str.toByteArray();
+        String valuetoadd;
+        byte[] valuetobeadded;
+        byte[] closeissuevalue = null;
+        
         if (btnCloseIssue.getText().equalsIgnoreCase("close issue")) {
             // set dateClosed text field with date today
             FillItWithDate(dateClosedText);
             String temperaryVersion = "XXX";
             versionText.setText(temperaryVersion);
             btnCloseIssue.setText("Reopen Issue");
-            value = value + "\n--- Issue Closed by "
+            
+            valuetoadd = "\n--- Issue Closed by "
                     + userName + " on " + today + "\n";
+            
+            valuetobeadded = valuetoadd.getBytes();
+            closeissuevalue = new byte[bkeyvalue.length + valuetobeadded.length];
+            System.arraycopy(bkeyvalue, 0, closeissuevalue, 0, bkeyvalue.length);
+            System.arraycopy(valuetobeadded, 0, closeissuevalue, bkeyvalue.length, valuetobeadded.length);
+            
         } else if (btnCloseIssue.getText().equalsIgnoreCase("reopen issue")) {
-            value = value + "\n \n--- Issue reopened by "
+            valuetoadd = "\n \n--- Issue reopened by "
                     + userName + " on " + today + " (version " + versionText.getText() + ") \n";
             versionText.setText("");
             dateClosedText.setText("");
             btnCloseIssue.setText("Close Issue");
+            
+            valuetobeadded = valuetoadd.getBytes();
+            closeissuevalue = new byte[bkeyvalue.length + valuetobeadded.length];
+            System.arraycopy(bkeyvalue, 0, closeissuevalue, 0, bkeyvalue.length);
+            System.arraycopy(valuetobeadded, 0, closeissuevalue, bkeyvalue.length, valuetobeadded.length);
+            
         }
-        descriptionText.setText(value);
+        InputStream stream;
+        stream = new ByteArrayInputStream(closeissuevalue);
+        try {
+            descriptionText.getEditorKit().read(stream, descriptionText.getDocument(), 0);
+        } catch (IOException ex) {
+            Logger.getLogger(IssueWindow.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (BadLocationException ex) {
+            Logger.getLogger(IssueWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_btnCloseIssueActionPerformed
 
     /**
@@ -757,8 +785,18 @@ public class IssueWindow extends JFrame {
             JOptionPane.showMessageDialog(this, "This issue is already the last row on the table!");
         } else {
             row++;
-            setIssueValuesFromTable(row,table);
-            setComponentValuesFromIssue();
+            try {
+                setIssueValuesFromTable(row,table);
+            } catch (IOException ex) {
+                Logger.getLogger(IssueWindow.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            try {
+                setComponentValuesFromIssue();
+            } catch (IOException ex) {
+                Logger.getLogger(IssueWindow.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (BadLocationException ex) {
+                Logger.getLogger(IssueWindow.class.getName()).log(Level.SEVERE, null, ex);
+            }
             table.setRowSelectionInterval(row, row);
             updateCustomIdList(row);
         }
@@ -795,8 +833,18 @@ public class IssueWindow extends JFrame {
             JOptionPane.showMessageDialog(this, "This issue is already the first row on the table!");
         } else {
             row--;
-            setIssueValuesFromTable(row,table);
-            setComponentValuesFromIssue();
+            try {
+                setIssueValuesFromTable(row,table);
+            } catch (IOException ex) {
+                Logger.getLogger(IssueWindow.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            try {
+                setComponentValuesFromIssue();
+            } catch (IOException ex) {
+                Logger.getLogger(IssueWindow.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (BadLocationException ex) {
+                Logger.getLogger(IssueWindow.class.getName()).log(Level.SEVERE, null, ex);
+            }
             table.setRowSelectionInterval(row, row);
             updateCustomIdList(row);
         }
@@ -898,12 +946,20 @@ public class IssueWindow extends JFrame {
      * @param row the row index on table for issue to retrieve
      * @param table the table with the row/issue data
      */
-    private void setIssueValuesFromTable(int row, JTable table) {
+    private void setIssueValuesFromTable(int row, JTable table) throws IOException {
 
         issue.setId(Integer.parseInt(getTableValueAt(row, 0).toString()));
         issue.setApp(getTableValueAt(row, 1).toString());
         issue.setTitle(getTableValueAt(row, 2).toString());
-        issue.setDescription(getTableValueAt(row, 3).toString());
+        
+        
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ObjectOutputStream os = new ObjectOutputStream(out);
+        os.writeObject(getTableValueAt(row, 3));
+        issue.setDescription(out.toByteArray());
+        
+        
+        
         issue.setProgrammer(getTableValueAt(row, 4).toString());
         issue.setDateOpened(getTableValueAt(row, 5).toString());
         issue.setRk(getTableValueAt(row, 6).toString());
@@ -928,11 +984,22 @@ public class IssueWindow extends JFrame {
     /**
      * Sets the issue values from the components and fields from issue window.
      */
-    private void setIssueValuesFromComponents() {
+    private void setIssueValuesFromComponents() throws IOException, BadLocationException {
         issue.setId(Integer.parseInt(idText.getText()));
         issue.setApp(appComboBox.getSelectedItem().toString());
         issue.setTitle(titleText.getText());
-        issue.setDescription(descriptionText.getText());
+        
+        ByteArrayOutputStream str = new ByteArrayOutputStream();                   
+        try {
+            descriptionText.getEditorKit().write(str, descriptionText.getDocument(), 0, descriptionText.getDocument().getLength());
+        } catch (IOException | BadLocationException ex) {
+            Logger.getLogger(IssueWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        byte[] bkey = str.toByteArray();        
+        issue.setDescription(bkey);
+        
+        
+        
         issue.setProgrammer(programmerComboBox.getSelectedItem().toString());
         issue.setDateOpened(dateOpenedText.getText());
         issue.setRk(rkComboBox.getSelectedItem().toString());
@@ -946,12 +1013,19 @@ public class IssueWindow extends JFrame {
     /**
      * Sets the components and fields on issue window from the issue object.
      */
-    private void setComponentValuesFromIssue() {
+    private void setComponentValuesFromIssue() throws IOException, BadLocationException {
 
         idText.setText(Integer.toString(issue.getId()));
         appComboBox.setSelectedItem(issue.getApp());
         titleText.setText(issue.getTitle());
-        descriptionText.setText(issue.getDescription());
+        
+        RTFEditorKit rtf = new RTFEditorKit();
+        descriptionText.setEditorKit(rtf);
+        byte[] bytesout = issue.getDescription();
+        InputStream stream = new ByteArrayInputStream(bytesout);
+        descriptionText.getEditorKit().read(stream, descriptionText.getDocument(), 0);        
+        
+        
         programmerComboBox.setSelectedItem(issue.getProgrammer());
         dateOpenedText.setText(issue.getDateOpened());
         rkComboBox.setSelectedItem(issue.getRk());
@@ -970,10 +1044,28 @@ public class IssueWindow extends JFrame {
      * @return boolean true if there is a change in any of the component values
      */
     private boolean hasChange(){
-
+        
+        byte[] byteout01 = issue.getDescription();
+        
+        ByteArrayOutputStream str = new ByteArrayOutputStream();                   
+        try {
+            descriptionText.getEditorKit().write(str, descriptionText.getDocument(), 0, descriptionText.getDocument().getLength());
+        } catch (IOException | BadLocationException ex) {
+            Logger.getLogger(IssueWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        byte[] bytechanged1 = str.toByteArray();
+        
+        boolean changed;
+        if (bytechanged1.equals(byteout01)) {
+            changed = false;
+        } else {
+            changed = true;
+        }
+        
         return ( appComboBox.getSelectedItem().equals(issue.getApp())
                 &&titleText.getText().equals(issue.getTitle())
-            && descriptionText.getText().equals(issue.getDescription())
+            && changed
             && programmerComboBox.getSelectedItem().equals(issue.getProgrammer())
             && dateOpenedText.getText().equals(issue.getDateOpened())
             && rkComboBox.getSelectedItem().equals(issue.getRk())
@@ -1231,13 +1323,13 @@ public class IssueWindow extends JFrame {
     private javax.swing.JLabel dateOpened;
     private javax.swing.JTextField dateOpenedText;
     private javax.swing.JLabel description;
-    private javax.swing.JTextArea descriptionText;
+    private javax.swing.JTextPane descriptionText;
     private javax.swing.JPanel formPane;
     private javax.swing.JLabel id;
     private javax.swing.JLabel idText;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JScrollPane jScrollPane7;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lock;
     private javax.swing.JCheckBox lockCheckBox;
     private javax.swing.JLabel programmer;

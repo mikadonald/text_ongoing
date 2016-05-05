@@ -297,7 +297,7 @@ public class LoginWindow extends JFrame {
     }//GEN-LAST:event_passwordFieldPWActionPerformed
 
     public String getUserName() {
-        String userNameToPM = userName.substring(7);
+        String userNameToPM = userName.substring(0);
         return userNameToPM;
     }
 
@@ -331,7 +331,7 @@ public class LoginWindow extends JFrame {
                                           + "\n Access denied!");
                 JOptionPane.showMessageDialog(this, "You have not been authorized. Default as user.");
             }
-            userName = userName.substring(7);
+            userName = userName.substring(0);
             System.out.println("userName: " + userName);
 
             // create an projectManager object

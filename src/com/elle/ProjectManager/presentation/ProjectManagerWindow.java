@@ -23,8 +23,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -41,7 +43,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import javax.swing.text.BadLocationException;
 
 /**
  * ProjectManagerWindow
@@ -1920,7 +1925,13 @@ public class ProjectManagerWindow extends JFrame implements ITableConstants {
             addIssueWindow.toFront();
         } else {
             if (btnAddIssue.getText().contains("Add issue to")) {
-                addIssueWindow = new IssueWindow(-1, this.getSelectedTable());
+                try {
+                    addIssueWindow = new IssueWindow(-1, this.getSelectedTable());
+                } catch (IOException ex) {
+                    Logger.getLogger(ProjectManagerWindow.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (BadLocationException ex) {
+                    Logger.getLogger(ProjectManagerWindow.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 addIssueWindow.setVisible(true);
                 addIssueWindowShow = true;
             } 
@@ -2281,7 +2292,14 @@ public class ProjectManagerWindow extends JFrame implements ITableConstants {
             openingIssuesList.get(openningIssueId).toFront();
         } else {
             if (openingIssuesList.size() < 6) {
-                IssueWindow viewIssue = new IssueWindow(row, table);
+                IssueWindow viewIssue = null;
+                try {
+                    viewIssue = new IssueWindow(row, table);
+                } catch (IOException ex) {
+                    Logger.getLogger(ProjectManagerWindow.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (BadLocationException ex) {
+                    Logger.getLogger(ProjectManagerWindow.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 openingIssuesList.put(openningIssueId, viewIssue);
                 tabs.get(getSelectedTabName()).getCustomIdList().add(openningIssueId);
 //                tab.getCustomIdList().printOutIDList();
@@ -2650,7 +2668,14 @@ public class ProjectManagerWindow extends JFrame implements ITableConstants {
                                     openingIssuesList.get(openningIssueId).toFront();
                                 } else {
                                     if (openingIssuesList.size() < 6) {
-                                        IssueWindow viewIssue = new IssueWindow(row, table);
+                                        IssueWindow viewIssue = null;
+                                        try {
+                                            viewIssue = new IssueWindow(row, table);
+                                        } catch (IOException ex) {
+                                            Logger.getLogger(ProjectManagerWindow.class.getName()).log(Level.SEVERE, null, ex);
+                                        } catch (BadLocationException ex) {
+                                            Logger.getLogger(ProjectManagerWindow.class.getName()).log(Level.SEVERE, null, ex);
+                                        }
                                         openingIssuesList.put(openningIssueId, viewIssue);
                                         tabs.get(getSelectedTabName()).getCustomIdList().add(openningIssueId);
 //                                        tabs.get(getSelectedTabName()).getCustomIdList().printOutIDList();
@@ -3412,7 +3437,14 @@ public class ProjectManagerWindow extends JFrame implements ITableConstants {
                                     openingIssuesList.get(openningIssueId).toFront();
                                 } else {
                                     if (openingIssuesList.size() < 6) {
-                                        IssueWindow viewIssue = new IssueWindow(row, table);
+                                        IssueWindow viewIssue = null;
+                                        try {
+                                            viewIssue = new IssueWindow(row, table);
+                                        } catch (IOException ex) {
+                                            Logger.getLogger(ProjectManagerWindow.class.getName()).log(Level.SEVERE, null, ex);
+                                        } catch (BadLocationException ex) {
+                                            Logger.getLogger(ProjectManagerWindow.class.getName()).log(Level.SEVERE, null, ex);
+                                        }
                                         openingIssuesList.put(openningIssueId, viewIssue);
                                         tabs.get(getSelectedTabName()).getCustomIdList().add(openningIssueId);
 //                                        tab.getCustomIdList().printOutIDList();
@@ -4636,11 +4668,16 @@ public class ProjectManagerWindow extends JFrame implements ITableConstants {
             for(int i = 0; i < listeners.length; i++){
                 model.removeTableModelListener(listeners[i]);
             }
-
+            
+            byte[] bytesout = issue.getDescription();
+            InputStream stream = new ByteArrayInputStream(bytesout);
+            String stringout = stream.toString();
+            
+            
             // update -> no need for id
             model.setValueAt(issue.getApp(), row, 1);
             model.setValueAt(issue.getTitle(), row, 2);
-            model.setValueAt(issue.getDescription(), row, 3);
+            model.setValueAt(stringout, row, 3);
             model.setValueAt(issue.getProgrammer(), row, 4);
             model.setValueAt(issue.getDateOpened(), row, 5);
             model.setValueAt(issue.getRk(), row, 6);
